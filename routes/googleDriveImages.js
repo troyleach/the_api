@@ -5,12 +5,12 @@ const router = express.Router();
 const { google } = require('googleapis');
 const credentials = require('./googleDriveCredentials.json');
 
-const { chain, take } = require('lodash')
+const { chain } = require('lodash')
 
 // const fs = require('fs');
 // const path = require('path');
 
-const getGoogleDrive = async () => {
+const getGoogleDriveData = async () => {
   const scopes = [
     'https://www.googleapis.com/auth/drive'
   ];
@@ -27,40 +27,42 @@ const getGoogleDrive = async () => {
   });
 }
 
+const groupImages = (payload) => {
+  const parentFolders = payload.find(folder => !folder.parents)
+  const subFolders = payload.filter(folder => folder.mimeType === 'application/vnd.google-apps.folder' && folder.parents)
+  return chain(payload)
+    // Group the elements of Array based on `parents` property array of ids
+    .groupBy("parents")
+    // `key` is group's name (parents folder id), `value` is the array of objects
+    .map((values, key) => {
+      let folderName;
+      let result;
+      result = subFolders.find(({ id }) => id === key);
+
+      if (key && result) {
+        folderName = result.name
+      }
+
+      if (folderName) {
+        return { folder: folderName, images: values }
+      }
+    })
+    .value()
+}
+
 // TODO: error handling
 const getImages = async (req, res, next) => {
-  const googleRes = await getGoogleDrive();
-  console.log('res', googleRes.data)
+  const googleRes = await getGoogleDriveData();
   try {
-    const parentFolders = googleRes.data.files.find(folder => !folder.parents)
-    const subFolders = googleRes.data.files.filter(folder => folder.mimeType === 'application/vnd.google-apps.folder' && folder.parents)
-
-    const groupImages = chain(googleRes.data.files)
-      // Group the elements of Array based on `parents` property array of ids
-      .groupBy("parents")
-      // `key` is group's name (parents folder id), `value` is the array of objects
-      .map((values, key) => {
-        let folderName;
-        let result;
-        result = subFolders.find(({ id }) => id === key);
-
-        if (key && result) {
-          folderName = result.name
-        }
-
-        if (folderName) {
-          return { folder: folderName, images: values }
-        }
-      })
-      .value()
-
-    let filtered;
-    filtered = groupImages.filter(Boolean);
+    let formattedPayload;
+    formattedPayload = groupImages(googleRes.data.files).filter(Boolean)
+    // let filtered;
+    // filtered = formattedPayload.filter(Boolean);
     if (req.query && req.query.type) {
-      filtered = filtered.filter(type => type.folder === req.query.type);
+      formattedPayload = formattedPayload.filter(type => type.folder === req.query.type);
     }
 
-    res.json(filtered)
+    res.json(formattedPayload)
   } catch (e) {
     next(e);
   }
@@ -69,12 +71,6 @@ const getImages = async (req, res, next) => {
 router
   .route('/')
   .get(getImages);
-// router
-//   .route('/carousel')
-//   .get(getCarousel);
-// router
-//   .route('/gallery')
-//   .get(getGallery);
 
 module.exports = router;
 
