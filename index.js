@@ -2,7 +2,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const logger = require('morgan');
 const path = require('path');
-const app = express();
 
 const stats = require('./routes/stats')
 const googleDriveImages = require('./routes/googleDriveImages')
@@ -10,6 +9,15 @@ const googleDriveImages = require('./routes/googleDriveImages')
 
 const PORT = process.env.PORT || 3010;
 const NODE_ENV = process.env.NODE_ENV || 'development';
+
+const app = express();
+
+app.use(function (req, res, next) {
+  // FIXME: this should not be *
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
 
 app.set('port', PORT);
 app.set('env', NODE_ENV);
