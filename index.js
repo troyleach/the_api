@@ -1,3 +1,4 @@
+// FIXME: I have to make a server file so that I can run jest
 const express = require('express');
 const bodyParser = require('body-parser');
 const logger = require('morgan');
