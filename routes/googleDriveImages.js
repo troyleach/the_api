@@ -3,29 +3,25 @@ const router = express.Router();
 
 
 const { google } = require('googleapis');
-const credentials = require('./googleDriveCredentials.json');
 
 const {
-  groupImages
+  groupImages,
+  getGoogleJwt
 } = require('../src/lib/helpers');
 
 
-// const fs = require('fs');
-// const path = require('path');
+
 // this is where I got the basic concept for this
 // https://medium.com/@bretcameron/how-to-use-the-google-drive-api-with-javascript-57a6cc9e5262
 // this is the node package: https://github.com/googleapis/google-api-nodejs-client#installation
 const getGoogleDriveData = async () => {
-  const scopes = [
+  const SCOPES =
     'https://www.googleapis.com/auth/drive'
-  ];
-  const auth = new google.auth.JWT(
-    credentials.client_email, null,
-    credentials.private_key, scopes
-  );
-  const drive = google.drive({ version: "v3", auth });
-  console.log('- - - - - - -  here - - - - - - - - - -')
-  console.log('AUTH', auth)
+    ;
+
+  const jwtClient = getGoogleJwt(SCOPES)
+
+  const drive = google.drive({ version: "v3", auth: jwtClient });
   return await drive.files.list({
     // pageSize: 20,
     fields: 'files(id, name, mimeType, webViewLink, webContentLink, parents)',
@@ -33,6 +29,7 @@ const getGoogleDriveData = async () => {
     orderBy: 'createdTime desc'
   });
 }
+
 
 // TODO: error handling
 const getImages = async (req, res, next) => {

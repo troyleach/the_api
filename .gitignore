@@ -1,4 +1,9 @@
+.env
+
 /node_modules
 
 *.org
 
+# this is the json files down loaded from google
+api-project-171670602045-5e8f45307999.json
+googleDriveCredentials.json
