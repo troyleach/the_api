@@ -2,15 +2,18 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const logger = require('morgan');
-const path = require('path');
 
-const stats = require('./routes/stats')
-const googleDriveImages = require('./routes/googleDriveImages')
+const stats = require('./routes/stats');
+const googleDriveImages = require('./routes/googleDriveImages');
+const googleEvents = require('./routes/googleEvents');
 
 
-const PORT = process.env.PORT || 3010;
+const PORT = process.env.PORT || 3020;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+};
 const app = express();
 
 app.use(function (req, res, next) {
@@ -28,6 +31,7 @@ app.use(bodyParser.json());
 
 app.use('/v1/stats', stats)
 app.use('/v1/images', googleDriveImages)
+app.use('/v1/events', googleEvents)
 // this below did not work
 // app.use('/', require(path.join(__dirname, 'routes')));
 

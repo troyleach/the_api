@@ -1,4 +1,5 @@
 const { chain } = require('lodash')
+const { google } = require('googleapis');
 
 const groupImages = (payload) => {
   const parentFolders = payload.find(folder => !folder.parents) // for future features
@@ -24,6 +25,16 @@ const groupImages = (payload) => {
     .filter(Boolean)
 }
 
+const getGoogleJwt = (scopes) => {
+  return new google.auth.JWT(
+    process.env.GOOGLE_CLIENT_EMAIL,
+    null,
+    process.env.GOOGLE_PRIVATE_KEY,
+    scopes
+  );
+}
+
 module.exports = {
-  groupImages
+  groupImages,
+  getGoogleJwt
 }
