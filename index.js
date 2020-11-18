@@ -1,4 +1,5 @@
 // FIXME: I have to make a server file so that I can run jest
+// FIXME: if something brakes along the way no response it just hangs
 const express = require('express');
 const bodyParser = require('body-parser');
 const logger = require('morgan');
